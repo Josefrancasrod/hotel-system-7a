@@ -7,6 +7,8 @@ const Room = require("./Model/Room");
 const catalogRoutes  = require('./Routes/CatalogRoutes');
 const Catalogo = require("./Model/Catalog");
 const express = require('express');
+const express = require("express");
+const userRoutes = require ("./Routes/userRoutes");
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
