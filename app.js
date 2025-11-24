@@ -3,36 +3,36 @@ BigInt.prototype.toJSON = function () {
 };
 
 require('dotenv').config();
-const Room = require("./Model/Room");
-const catalogRoutes  = require('./Routes/CatalogRoutes');
-const Catalogo = require("./Model/Catalog");
-const express = require('express');
-const express = require("express");
-const userRoutes = require ("./Routes/userRoutes");
 
-const { PrismaClient } = require('@prisma/client');
+const express = require("express");
+const Room = require("./Model/Room");
+const Catalogo = require("./Model/Catalog");
+const catalogRoutes = require("./Routes/CatalogRoutes");
+const userRoutes = require("./Routes/userRoutes");
+
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const app = express();
-
 app.use(express.json());
 
 const PORT = 3000;
 
-//app.use(express.json());
-app.use('/api/catalog', catalogRoutes);
+// Rutas principales
+app.use("/api/catalog", catalogRoutes);
+app.use("/api/users", userRoutes);
 
-
-app.get('/', (req, res) => {
-  res.json({message : "Nothing here"})
+// Ruta base
+app.get("/", (req, res) => {
+  res.json({ message: "Nothing here" });
 });
 
-app.post('/get', (req, res) => {
+app.post("/get", (req, res) => {
   console.log(req.body);
-  res.json({"requestBody": "hello"})
+  res.json({ requestBody: "hello" });
 });
 
-
+// Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
