@@ -1,35 +1,9 @@
 // Controller/CatalogController.js
-const { 
-  loginUser, 
-  registerUser, 
-  logoutUser,
-  refreshAccessToken,
-  verifyAccessToken 
-} = require('../Services/UserServices');
+const UserService = require('../Services/UserServices'); // Nota: con "s" según tu estructura
 
 class CatalogController {
-  // POST /api/auth/login
-  async login(req, res) {
-    try {
-      const result = await loginUser(req.body);
-      res.status(200).json({ success: true, data: result });
-    } catch (error) {
-      res.status(401).json({ success: false, error: error.message });
-    }
-  }
-
-  // POST /api/auth/register
-  async register(req, res) {
-    try {
-      const result = await registerUser(req.body);
-      res.status(201).json({ 
-        success: true, 
-        message: 'Usuario registrado exitosamente',
-        data: result 
-      });
-    } catch (error) {
-      res.status(400).json({ success: false, error: error.message });
-    }
+  constructor() {
+    this.userService = new UserService();
   }
 
   // POST /api/auth/refresh_token
@@ -38,7 +12,7 @@ class CatalogController {
       const { refreshToken } = req.body;
       if (!refreshToken) throw new Error('Refresh token requerido');
       
-      const result = refreshAccessToken(refreshToken);
+      const result = this.userService.refreshAccessToken(refreshToken);
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       res.status(401).json({ success: false, error: error.message });
@@ -49,7 +23,7 @@ class CatalogController {
   async logout(req, res) {
     try {
       const { refreshToken } = req.body;
-      const result = await logoutUser(refreshToken);
+      const result = this.userService.logout(refreshToken);
       res.status(200).json({ success: true, message: result.message });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
@@ -62,7 +36,7 @@ class CatalogController {
       const token = req.headers.authorization?.split(' ')[1];
       if (!token) throw new Error('Token no proporcionado');
       
-      const decoded = verifyAccessToken(token);
+      const decoded = this.userService.verifyAccessToken(token);
       res.status(200).json({ success: true, data: decoded });
     } catch (error) {
       res.status(401).json({ success: false, error: error.message });
