@@ -57,4 +57,31 @@ describe("Controlador: logout", () => {
       message: "Usuario no encontrado",
     });
   });
+
+  test("Debe validar que userId sea un número válido", async () => {
+    req.body.userId = "invalid";
+    logoutUser.mockRejectedValue(new Error("ID de usuario inválido"));
+
+    await logout(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "ID de usuario inválido",
+    });
+  });
+
+  test("Debe manejar userId como string numérico", async () => {
+    req.body.userId = "5";
+    const mockResult = { userId: 5, status: "Sesión cerrada" };
+    logoutUser.mockResolvedValue(mockResult);
+
+    await logout(req, res);
+
+    expect(logoutUser).toHaveBeenCalledWith("5");
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Sesión cerrada correctamente",
+      result: mockResult,
+    });
+  });
 });

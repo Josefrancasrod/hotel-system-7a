@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const prisma = new PrismaClient();
 
@@ -34,8 +35,8 @@ const registerUser = async ({ nombre, apellidos, email, username, cell_number, p
   return userWithoutPassword;
 };
 
+// Servicio para hacer login
 const loginUser = async ({ email, password }) => {
-  // Buscar usuario por email
   const user = await prisma.users.findUnique({
     where: { email },
   });
@@ -44,25 +45,22 @@ const loginUser = async ({ email, password }) => {
     throw new Error("Credenciales inválidas");
   }
 
-  // Verificar la contraseña
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
     throw new Error("Credenciales inválidas");
   }
 
-  // Generar token JWT
   const token = jwt.sign(
-    { 
-      userId: user.id, 
-      email: user.email, 
-      role: user.role 
+    {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
     },
-    process.env.JWT_SECRET || "tu_secreto_jwt", // Usa variable de entorno en producción
+    process.env.JWT_SECRET || "tu_secreto_jwt",
     { expiresIn: "24h" }
   );
 
-  // No devolver la contraseña en la respuesta
   const { password: _, ...userWithoutPassword } = user;
 
   return {
@@ -71,23 +69,30 @@ const loginUser = async ({ email, password }) => {
   };
 };
 
-
 // Servicio para cerrar sesión
 const logoutUser = async (userId) => {
-  // Aquí se puede invalidar el token, limpiar sesión, o registrar un log.
+  const userIdNumber = parseInt(userId);
+
+  if (isNaN(userIdNumber)) {
+    throw new Error("ID de usuario inválido");
+  }
 
   const user = await prisma.users.findUnique({
-    where: { id: userId },
+    where: { id: userIdNumber },
   });
 
   if (!user) {
     throw new Error("Usuario no encontrado");
   }
 
-  // Aquí podrías agregar lógica como:
-  // await prisma.sessions.deleteMany({ where: { userId } });
+  await prisma.users.update({
+    where: { id: userIdNumber },
+    data: {
+      updated_at: new Date(),
+    },
+  });
 
-  return { userId, status: "Sesión cerrada" };
+  return { userId: userIdNumber, status: "Sesión cerrada" };
 };
 
-module.exports = { registerUser, logoutUser };
+module.exports = { registerUser, loginUser, logoutUser };
