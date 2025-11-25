@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Necesario para migraciones con Supabase
+}
+
+model users {
+  id          BigInt    @id @default(autoincrement())
+  nombre      String
+  apellidos   String
+  email       String    @unique
+  username    String    @unique
+  cell_number String?
+  password    String
+  role        String?   @default("user")
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @default(now())
+}

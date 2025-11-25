@@ -8,6 +8,9 @@ const catalogRoutes  = require('./Routes/CatalogRoutes');
 const Catalogo = require("./Model/Catalog");
 const express = require('express');
 
+// 🚀 AQUI AGREGAMOS LAS RUTAS DE USUARIOS
+const userRoutes = require("./Routes/userRoutes");
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -17,9 +20,10 @@ app.use(express.json());
 
 const PORT = 3000;
 
-//app.use(express.json());
+// Rutas existentes
 app.use('/api/catalog', catalogRoutes);
 
+app.use("/api/users", userRoutes);
 
 app.get('/', (req, res) => {
   res.json({message : "Nothing here"})
@@ -29,7 +33,6 @@ app.post('/get', (req, res) => {
   console.log(req.body);
   res.json({"requestBody": "hello"})
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
