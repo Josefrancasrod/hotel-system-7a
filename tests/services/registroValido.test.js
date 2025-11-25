@@ -11,12 +11,12 @@ describe("Controlador: register", () => {
   beforeEach(() => {
     req = {
       body: {
-        nombre: "Fernando",
-        apellidos: "Flores",
-        email: "fernando@example.com",
-        username: "ferflores",
-        cell_number: "1234567890",
-        password: "12345678",
+        nombre: "Aaron",
+        apellidos: "Carrillo",
+        email: "nando@example.com",
+        username: "Ferxdc",
+        cell_number: "489284924",
+        password: "4i4i0i0391",
         role: "user",
       },
     };
@@ -29,28 +29,32 @@ describe("Controlador: register", () => {
     jest.clearAllMocks();
   });
 
-  test("✅ Debe registrar un usuario correctamente", async () => {
+  test("Debe registrar un usuario correctamente", async () => {
     const mockUser = {
       id: 1,
-      nombre: "Fernando",
-      apellidos: "Flores",
-      email: "fernando@example.com",
-      username: "ferflores",
+      nombre: "Aaron",
+      apellidos: "Carrillo",
+      email: "nando@example.com",
+      username: "Ferxdc",
       role: "user",
     };
 
+    // Simula que el servicio devuelve un usuario registrado
     registerUser.mockResolvedValue(mockUser);
 
+    // Ejecuta el controlador
     await register(req, res);
 
+    // Verifica que el servicio se llamó con los mismos datos que vienen en req.body
     expect(registerUser).toHaveBeenCalledWith(expect.objectContaining({
-      nombre: "Fernando",
-      apellidos: "Flores",
-      email: "fernando@example.com",
-      username: "ferflores",
-      password: "12345678",
+      nombre: "Aaron",
+      apellidos: "Carrillo",
+      email: "nando@example.com",
+      username: "Ferxdc",
+      password: "4i4i0i0391",
     }));
 
+    // Verifica la respuesta del controlador
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
       message: "Usuario registrado correctamente",
@@ -58,7 +62,7 @@ describe("Controlador: register", () => {
     });
   });
 
-  test("❌ Debe devolver error si faltan campos obligatorios", async () => {
+  test("Debe devolver error si faltan campos obligatorios", async () => {
     req.body = { nombre: "SoloNombre" };
 
     await register(req, res);
@@ -69,7 +73,7 @@ describe("Controlador: register", () => {
     });
   });
 
-  test("❌ Debe manejar errores lanzados por registerUser", async () => {
+  test("Debe manejar errores lanzados por registerUser", async () => {
     registerUser.mockRejectedValue(new Error("El email ya está registrado"));
 
     await register(req, res);

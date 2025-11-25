@@ -22,7 +22,7 @@ describe("Controlador: logout", () => {
     jest.clearAllMocks();
   });
 
-  test("✅ Debe cerrar la sesión correctamente", async () => {
+  test("Debe cerrar la sesión correctamente", async () => {
     const mockResult = { userId: 1, status: "Sesión cerrada" };
     logoutUser.mockResolvedValue(mockResult);
 
@@ -36,7 +36,7 @@ describe("Controlador: logout", () => {
     });
   });
 
-  test("❌ Debe devolver error si no se envía el userId", async () => {
+  test("Debe devolver error si no se envía el userId", async () => {
     req.body = {}; // Sin userId
 
     await logout(req, res);
@@ -47,7 +47,7 @@ describe("Controlador: logout", () => {
     });
   });
 
-  test("❌ Debe manejar errores lanzados por logoutUser", async () => {
+  test("Debe manejar errores lanzados por logoutUser", async () => {
     logoutUser.mockRejectedValue(new Error("Usuario no encontrado"));
 
     await logout(req, res);
