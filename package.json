@@ -22,11 +22,13 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "jest": "^30.2.0",
-    "prisma": "^6.18.0"
+    "prisma": "^6.18.0",
+    "supertest": "^7.0.0"
   },
   "jest": {
-  "testPathIgnorePatterns": [
-    "/tests/services/CatalogServices.test.js"
-  ]
-}
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/tests/services/CatalogServices.test.js"
+    ]
+  }
 }
