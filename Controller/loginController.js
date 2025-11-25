@@ -1,45 +1,41 @@
-const { PrismaClient } = require("@prisma/client");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const { loginUser } = require("../Services/UserServices");
 
-const prisma = new PrismaClient();
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-// Servicio para hacer loginnpm
-const loginUser = async ({ email, password }) => {
-  // Buscar usuario por email
-  const user = await prisma.users.findUnique({
-    where: { email },
-  });
+    // Validar campos obligatorios
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email y contraseña son obligatorios",
+      });
+    }
 
-  if (!user) {
-    throw new Error("Credenciales inválidas");
+    // Normalizar email
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Llamar al service
+    const { user, token } = await loginUser({
+      email: normalizedEmail,
+      password,
+    });
+
+    return res.status(200).json({
+      message: "Login exitoso",
+      user,
+      token,
+    });
+  } catch (error) {
+    if (error.message === "Credenciales inválidas") {
+      return res.status(401).json({ message: "Credenciales inválidas" });
+    }
+
+    console.error("Error en loginController:", error);
+    
+    return res.status(500).json({
+      message: "Error interno del servidor",
+    });
   }
-
-  // Verificar la contraseña
-  const isPasswordValid = await bcrypt.compare(password, user.password);
-
-  if (!isPasswordValid) {
-    throw new Error("Credenciales inválidas");
-  }
-
-  // Generar token JWT
-  const token = jwt.sign(
-    { 
-      userId: user.id, 
-      email: user.email, 
-      role: user.role 
-    },
-    process.env.JWT_SECRET || "tu_secreto_jwt",
-    { expiresIn: "24h" }
-  );
-
-  // No devolver la contraseña en la respuesta
-  const { password: _, ...userWithoutPassword } = user;
-
-  return {
-    user: userWithoutPassword,
-    token,
-  };
 };
 
-module.exports = { loginUser };
+module.exports = { login };

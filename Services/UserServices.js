@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken"); // <-- IMPORTANTE: lo agregamos
 
 const prisma = new PrismaClient();
 
@@ -34,6 +35,7 @@ const registerUser = async ({ nombre, apellidos, email, username, cell_number, p
   return userWithoutPassword;
 };
 
+// Servicio para login
 const loginUser = async ({ email, password }) => {
   // Buscar usuario por email
   const user = await prisma.users.findUnique({
@@ -54,15 +56,15 @@ const loginUser = async ({ email, password }) => {
   // Generar token JWT
   const token = jwt.sign(
     { 
-      userId: user.id, 
-      email: user.email, 
-      role: user.role 
+      userId: user.id,
+      email: user.email,
+      role: user.role,
     },
-    process.env.JWT_SECRET || "tu_secreto_jwt", // Usa variable de entorno en producción
+    process.env.JWT_SECRET || "tu_secreto_jwt",
     { expiresIn: "24h" }
   );
 
-  // No devolver la contraseña en la respuesta
+  // No devolver la contraseña
   const { password: _, ...userWithoutPassword } = user;
 
   return {
@@ -71,11 +73,8 @@ const loginUser = async ({ email, password }) => {
   };
 };
 
-
 // Servicio para cerrar sesión
 const logoutUser = async (userId) => {
-  // Aquí se puede invalidar el token, limpiar sesión, o registrar un log.
-
   const user = await prisma.users.findUnique({
     where: { id: userId },
   });
@@ -84,10 +83,11 @@ const logoutUser = async (userId) => {
     throw new Error("Usuario no encontrado");
   }
 
-  // Aquí podrías agregar lógica como:
-  // await prisma.sessions.deleteMany({ where: { userId } });
-
   return { userId, status: "Sesión cerrada" };
 };
 
-module.exports = { registerUser, logoutUser };
+module.exports = { 
+  registerUser,
+  loginUser,    // <-- IMPORTANTE: ahora sí está exportado
+  logoutUser 
+};
