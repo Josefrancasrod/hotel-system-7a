@@ -3,21 +3,20 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL") // Necesario para migraciones con Supabase
 }
 
 model users {
-  id                  BigInt    @id @default(autoincrement())
-  nombre              String    @db.VarChar(100)
-  apellidos           String    @db.VarChar(150)
-  email               String    @unique @db.VarChar(150)
-  username            String    @unique @db.VarChar(50)
-  cell_number         String?   @db.VarChar(20)
-  password            String    @db.VarChar(255)
-  role                String?   @default("user") @db.VarChar(20)
-  reset_token         String?   @db.VarChar(10)
-  reset_token_expires DateTime? @db.Timestamptz(6)
-  created_at          DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+  id          BigInt    @id @default(autoincrement())
+  nombre      String
+  apellidos   String
+  email       String    @unique
+  username    String    @unique
+  cell_number String?
+  password    String
+  role        String?   @default("user")
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @default(now())
 }

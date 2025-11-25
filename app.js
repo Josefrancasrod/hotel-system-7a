@@ -10,7 +10,10 @@ const Catalogo = require("./Model/Catalog");
 const catalogRoutes = require("./Routes/CatalogRoutes");
 const userRoutes = require("./Routes/userRoutes");
 
-const { PrismaClient } = require("@prisma/client");
+// 🚀 AQUI AGREGAMOS LAS RUTAS DE USUARIOS
+const userRoutes = require("./Routes/userRoutes");
+
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const app = express();
