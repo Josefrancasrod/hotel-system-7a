@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken"); // <-- IMPORTANTE: lo agregamos
+const jwt = require("jsonwebtoken");
 
 const prisma = new PrismaClient();
 
@@ -35,7 +35,7 @@ const registerUser = async ({ nombre, apellidos, email, username, cell_number, p
   return userWithoutPassword;
 };
 
-// Servicio para login
+// Servicio para hacer login
 const loginUser = async ({ email, password }) => {
   // Buscar usuario por email
   const user = await prisma.users.findUnique({
@@ -56,15 +56,15 @@ const loginUser = async ({ email, password }) => {
   // Generar token JWT
   const token = jwt.sign(
     { 
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+      userId: user.id, 
+      email: user.email, 
+      role: user.role 
     },
     process.env.JWT_SECRET || "tu_secreto_jwt",
     { expiresIn: "24h" }
   );
 
-  // No devolver la contraseña
+  // No devolver la contraseña en la respuesta
   const { password: _, ...userWithoutPassword } = user;
 
   return {
@@ -75,19 +75,33 @@ const loginUser = async ({ email, password }) => {
 
 // Servicio para cerrar sesión
 const logoutUser = async (userId) => {
+  // Validar que userId sea un número válido
+  const userIdNumber = parseInt(userId);
+
+  if (isNaN(userIdNumber)) {
+    throw new Error("ID de usuario inválido");
+  }
+
   const user = await prisma.users.findUnique({
-    where: { id: userId },
+    where: { id: userIdNumber },
   });
 
   if (!user) {
     throw new Error("Usuario no encontrado");
   }
 
-  return { userId, status: "Sesión cerrada" };
+  // Actualizar la última actividad del usuario
+  await prisma.users.update({
+    where: { id: userIdNumber },
+    data: {
+      updated_at: new Date(),
+    },
+  });
+
+  // Aquí podrías agregar lógica adicional como:
+  // await prisma.sessions.deleteMany({ where: { userId: userIdNumber } });
+
+  return { userId: userIdNumber, status: "Sesión cerrada" };
 };
 
-module.exports = { 
-  registerUser,
-  loginUser,    // <-- IMPORTANTE: ahora sí está exportado
-  logoutUser 
-};
+module.exports = { registerUser, loginUser, logoutUser };
