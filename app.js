@@ -3,9 +3,10 @@ BigInt.prototype.toJSON = function () {
 };
 
 require('dotenv').config();
-const Room = require("./Model/Room");
-const catalogRoutes  = require('./Routes/CatalogRoutes');
-const Catalogo = require("./Model/Catalog");
+const Room = require("../Model/Room");
+const catalogRoutes = require('./Routes/CatalogRoutes');
+const deleteUserRoutes = require('./Routes/deleteUserRoutes');
+const Catalogo = require("../Model/Catalog");
 const express = require('express');
 
 const { PrismaClient } = require('@prisma/client');
@@ -17,17 +18,18 @@ app.use(express.json());
 
 const PORT = 3000;
 
-//app.use(express.json());
+// Rutas
 app.use('/api/catalog', catalogRoutes);
+app.use('/api/usuarios', deleteUserRoutes);
 
 
 app.get('/', (req, res) => {
-  res.json({message : "Nothing here"})
+  res.json({ message: "Nothing here" })
 });
 
 app.post('/get', (req, res) => {
   console.log(req.body);
-  res.json({"requestBody": "hello"})
+  res.json({ "requestBody": "hello" })
 });
 
 

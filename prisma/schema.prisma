@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model reservations {
+  id          BigInt    @id @default(autoincrement())
+  user_id     BigInt?
+  room_number Int
+  start_date  DateTime  @db.Date
+  end_date    DateTime  @db.Date
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reviews     reviews[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model reviews {
+  id             BigInt        @id @default(autoincrement())
+  user_id        BigInt?
+  reservation_id BigInt?
+  rating         Int?
+  comment        String?
+  reservations   reservations? @relation(fields: [reservation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users          users?        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model roles {
+  id    BigInt  @id @default(autoincrement())
+  name  String
+  users users[]
+}
+
+model users {
+  id           BigInt         @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  role_id      BigInt?
+  reservations reservations[]
+  reviews      reviews[]
+  roles        roles?         @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
