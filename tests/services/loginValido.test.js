@@ -2,6 +2,7 @@ const { login } = require("../../Controller/loginController");
 const { loginUser } = require("../../Services/UserServices");
 const { registerUser } = require("../../Services/UserServices")
 
+// actualizando archivo
 // Mock del servicio real
 jest.mock("../../Services/UserServices");
 

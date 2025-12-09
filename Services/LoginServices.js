@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken"); // Asegúrate de instalar: npm install jsonwebtoken
-
+// actualizando archivo
 // Agregar esta función al archivo UserServices.js existente
 const loginUser = async ({ email, password }) => {
   // Buscar usuario por email

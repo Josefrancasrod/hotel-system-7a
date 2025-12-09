@@ -1,7 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+// actualizando archivo
 const prisma = new PrismaClient();
 
 // Servicio para hacer loginnpm
