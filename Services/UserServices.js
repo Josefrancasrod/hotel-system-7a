@@ -6,6 +6,31 @@ const jwt = require("jsonwebtoken");
 const prisma = new PrismaClient();
 
 // ==========================================
+// SERVICIO DE ACTUALIZACIÓN
+// ==========================================
+const updateUser = async (id, data) => {
+  const user = await prisma.users.findUnique({
+    where: { id: Number(id) }
+  });
+
+  if (!user) {
+    throw new Error("Usuario no encontrado");
+  }
+
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, 10);
+  }
+
+  const updatedUser = await prisma.users.update({
+    where: { id: Number(id) },
+    data
+  });
+
+  const { password: _, ...userWithoutPassword } = updatedUser;
+  return userWithoutPassword;
+};
+
+// ==========================================
 // CONFIGURACIÓN JWT
 // ==========================================
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'secret_access_token_2024';
@@ -13,13 +38,12 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'secret_refresh
 const ACCESS_TOKEN_EXPIRY = '15m';
 const REFRESH_TOKEN_EXPIRY = '7d';
 
-// Almacenamiento temporal de refresh tokens (en producción usar BD)
+// Almacenamiento temporal de tokens
 const refreshTokensMap = new Map();
 
 // ==========================================
 // FUNCIONES JWT
 // ==========================================
-
 const generateAccessToken = (payload) => {
   return jwt.sign(
     { userId: payload.userId, email: payload.email, role: payload.role, type: 'access' },
@@ -58,17 +82,19 @@ const verifyRefreshToken = (token) => {
 
 const refreshAccessToken = (refreshToken) => {
   const decoded = verifyRefreshToken(refreshToken);
+
   const newAccessToken = generateAccessToken({ 
     userId: decoded.userId, 
     email: decoded.email 
   });
+
   const newRefreshToken = generateRefreshToken({ 
     userId: decoded.userId, 
     email: decoded.email 
   });
-  
+
   revokeRefreshToken(refreshToken);
-  
+
   return { accessToken: newAccessToken, refreshToken: newRefreshToken };
 };
 
@@ -78,7 +104,7 @@ const revokeRefreshToken = (token) => {
 };
 
 // ==========================================
-// SERVICIO DE REGISTRO
+// REGISTRO
 // ==========================================
 const registerUser = async ({ nombre, apellidos, email, username, cell_number, password, role }) => {
   const existingUser = await prisma.users.findFirst({
@@ -111,26 +137,18 @@ const registerUser = async ({ nombre, apellidos, email, username, cell_number, p
 };
 
 // ==========================================
-// SERVICIO DE LOGIN (CON JWT MEJORADO)
+// LOGIN
 // ==========================================
 const loginUser = async ({ email, password }) => {
-  // Buscar usuario por email
   const user = await prisma.users.findUnique({
     where: { email },
   });
 
-  if (!user) {
-    throw new Error("Credenciales inválidas");
-  }
+  if (!user) throw new Error("Credenciales inválidas");
 
-  // Verificar la contraseña
   const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) throw new Error("Credenciales inválidas");
 
-  if (!isPasswordValid) {
-    throw new Error("Credenciales inválidas");
-  }
-
-  // Generar tokens JWT (Access + Refresh)
   const accessToken = generateAccessToken({
     userId: user.id,
     email: user.email,
@@ -142,7 +160,6 @@ const loginUser = async ({ email, password }) => {
     email: user.email
   });
 
-  // No devolver la contraseña en la respuesta
   const { password: _, ...userWithoutPassword } = user;
 
   return {
@@ -155,36 +172,27 @@ const loginUser = async ({ email, password }) => {
 };
 
 // ==========================================
-// SERVICIO DE LOGOUT
+// LOGOUT
 // ==========================================
 const logoutUser = async (refreshToken) => {
-  if (!refreshToken) {
-    throw new Error("Refresh token no proporcionado");
-  }
+  if (!refreshToken) throw new Error("Refresh token no proporcionado");
 
-  try {
-    // Revocar el refresh token
-    revokeRefreshToken(refreshToken);
-    
-    return { 
-      message: "Sesión cerrada exitosamente",
-      status: "success" 
-    };
-  } catch (error) {
-    throw new Error("Error al cerrar sesión: " + error.message);
-  }
+  revokeRefreshToken(refreshToken);
+
+  return { 
+    message: "Sesión cerrada exitosamente",
+    status: "success" 
+  };
 };
 
 // ==========================================
-// EXPORTAR FUNCIONES
+// EXPORTS
 // ==========================================
-module.exports = { 
-  // Funciones de autenticación
-  registerUser, 
+module.exports = {
+  registerUser,
   loginUser,
   logoutUser,
-  
-  // Funciones JWT
+  updateUser,
   generateAccessToken,
   generateRefreshToken,
   verifyAccessToken,

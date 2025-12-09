@@ -5,7 +5,9 @@ const logout = async (req, res) => {
     const { userId } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ message: "El ID de usuario es obligatorio para cerrar sesión" });
+      return res.status(400).json({ 
+        message: "El ID de usuario es obligatorio para cerrar sesión" 
+      });
     }
 
     const result = await logoutUser(userId);
