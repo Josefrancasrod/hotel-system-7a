@@ -6,7 +6,9 @@ BigInt.prototype.toJSON = function () {
 require("dotenv").config();
 
 const express = require("express");
-
+// rutas roles
+const rolesRoutes = require("/routes/roles.js");
+app.use("/api/roles", rolesRoutes);
 // Models (si los ocupas en controladores)
 const Room = require("./Model/Room");
 const Catalogo = require("./Model/Catalog");

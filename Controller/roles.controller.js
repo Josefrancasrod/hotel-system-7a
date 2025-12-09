@@ -1,3 +1,4 @@
+// controller ya existente
 const prisma = require("../prisma/prismaClient");
 
 module.exports = {

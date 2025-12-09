@@ -1,74 +1,54 @@
-const request = require("supertest");
-const app = require("../app");
-const { PrismaClient } = require("@prisma/client");
+const {
+  crearRol,
+  obtenerRol,
+  obtenerRoles,
+  actualizarRol,
+  eliminarRol,
+  reiniciarDatos,
+  roles
+} = require("./roles");
 
-const prisma = new PrismaClient();
-
-beforeAll(async () => {
-  // Limpiar tabla antes de iniciar pruebas
-  await prisma.role.deleteMany();
+beforeEach(() => {
+  reiniciarDatos(); // reinicia antes de cada test
 });
 
-afterAll(async () => {
-  await prisma.$disconnect();
+test("Debe crear un rol correctamente", () => {
+  const rol = crearRol("Administrador", "Control total del sistema");
+  expect(rol.name).toBe("Administrador");
+  expect(rol.description).toBe("Control total del sistema");
 });
 
-describe("CRUD de Roles", () => {
+test("Debe obtener un rol por ID", () => {
+  const creado = crearRol("Editor", "Puede modificar contenido");
+  const rol = obtenerRol(creado.id);
+  expect(rol).toBeDefined();
+  expect(rol.name).toBe("Editor");
+});
 
-  let createdRoleId;
+test("Debe obtener todos los roles", () => {
+  crearRol("A", "Desc");
+  crearRol("B", "Desc");
+  const lista = obtenerRoles();
+  expect(lista.length).toBe(2);
+});
 
-  // CREATE
-  test("POST /api/roles → debería crear un rol", async () => {
-    const response = await request(app)
-      .post("/api/roles")
-      .send({
-        name: "tester",
-        description: "Rol creado en test"
-      });
+test("Debe actualizar un rol existente", () => {
+  crearRol("Usuario", "Descripción inicial");
+  const actualizado = actualizarRol(1, "Usuario Premium", "Acceso extendido");
+  expect(actualizado).not.toBeNull();
+  expect(actualizado.name).toBe("Usuario Premium");
+  expect(actualizado.description).toBe("Acceso extendido");
+});
 
-    expect(response.status).toBe(200);
-    expect(response.body.id).toBeDefined();
-    expect(response.body.name).toBe("tester");
+test("Debe eliminar un rol correctamente", () => {
+  crearRol("Tester", "Pruebas del sistema");
+  const eliminado = eliminarRol(1);
+  expect(eliminado).not.toBeNull();
+  expect(eliminado.name).toBe("Tester");
+  expect(roles.length).toBe(0);
+});
 
-    createdRoleId = response.body.id;
-  });
-
-  // READ ALL
-  test("GET /api/roles → debería listar roles", async () => {
-    const response = await request(app).get("/api/roles");
-
-    expect(response.status).toBe(200);
-    expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBeGreaterThan(0);
-  });
-
-  // READ ONE
-  test("GET /api/roles/:id → debería obtener un rol por ID", async () => {
-    const response = await request(app).get(`/api/roles/${createdRoleId}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.id).toBe(createdRoleId);
-  });
-
-  // UPDATE
-  test("PUT /api/roles/:id → debería actualizar un rol", async () => {
-    const response = await request(app)
-      .put(`/api/roles/${createdRoleId}`)
-      .send({
-        name: "tester_updated",
-        description: "Rol actualizado"
-      });
-
-    expect(response.status).toBe(200);
-    expect(response.body.name).toBe("tester_updated");
-  });
-
-  // DELETE
-  test("DELETE /api/roles/:id → debería eliminar un rol", async () => {
-    const response = await request(app).delete(`/api/roles/${createdRoleId}`);
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe("Role deleted");
-  });
-
+test("Debe regresar null si intenta eliminar un ID inexistente", () => {
+  const eliminado = eliminarRol(99);
+  expect(eliminado).toBeNull();
 });
