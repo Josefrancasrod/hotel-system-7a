@@ -15,6 +15,7 @@ const Catalogo = require("./Model/Catalog");
 const catalogRoutes = require("./Routes/CatalogRoutes");
 const userRoutes = require("./Routes/userRoutes");
 const rolesRoutes = require("./Routes/roles.routes"); // <-- AGREGADO
+const statsRoutes = require("./Routes/StatsRoutes");
 
 // Prisma
 const { PrismaClient } = require("@prisma/client");
@@ -31,6 +32,7 @@ const PORT = 3000;
 app.use("/api/catalog", catalogRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/roles", rolesRoutes); // <-- AGREGADO
+app.use("/api/stats", statsRoutes);
 
 // Ruta base
 app.get("/", (req, res) => {
