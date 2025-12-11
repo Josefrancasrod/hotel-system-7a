@@ -18,3 +18,7 @@ router.put("/reviews/:reviewId", authRequired, updateReview);
 router.delete("/reviews/user/:userId/:reviewId", authRequired, deleteReview);
 
 export default router;
+const { deleteReview } = require("../Controller/ReviewsController");
+
+// BORRAR RESEÑA
+router.delete("/reviews/user/:userId/:reviewId", deleteReview);
