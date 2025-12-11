@@ -1,37 +1,50 @@
 import { prisma } from "../config/prisma.js";
 
-export const getReviewsByUser = async (req, res) => {
+export const updateReview = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { reviewId } = req.params;
+    const { userId, title, content, rating } = req.body;
 
-    // 1. Verificar si el usuario existe
-    const user = await prisma.user.findUnique({
-      where: { id: Number(userId) },
+    // 1. Verificar si la reseña existe
+    const review = await prisma.review.findUnique({
+      where: { id: Number(reviewId) },
     });
 
-    if (!user) {
+    if (!review) {
       return res.status(404).json({
-        message: "El usuario no existe",
+        message: "La reseña no existe",
       });
     }
 
-    // 2. Buscar reseñas del usuario
-    const reviews = await prisma.review.findMany({
-      where: { userId: Number(userId) },
-      orderBy: { createdAt: "desc" },
+    // 2. Verificar si la reseña pertenece al usuario (opcional pero recomendado)
+    if (review.userId !== Number(userId)) {
+      return res.status(403).json({
+        message: "No tienes permiso para editar esta reseña",
+      });
+    }
+
+    // 3. Actualizar la reseña
+    const updatedReview = await prisma.review.update({
+      where: { id: Number(reviewId) },
+      data: {
+        title: title || review.title,
+        content: content || review.content,
+        rating: rating || review.rating,
+        updatedAt: new Date(),
+      },
     });
 
     return res.json({
-      funcion: "getReviewsByUser",
+      funcion: "updateReview",
       descripcion:
-        "Obtiene todas las reseñas creadas por un usuario específico utilizando su ID.",
-      totalReviews: reviews.length,
-      reviews,
+        "Actualiza una reseña existente creada por un usuario.",
+      message: "Reseña actualizada exitosamente",
+      updatedReview,
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Error al obtener las reseñas del usuario",
+      message: "Error al actualizar la reseña",
     });
   }
 };
