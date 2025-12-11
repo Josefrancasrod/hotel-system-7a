@@ -82,3 +82,30 @@ export const deleteReview = async (req, res) => {
     });
   }
 };
+const { deleteReviewService } = require("../Services/ReviewsServices");
+
+exports.deleteReview = async (req, res) => {
+  try {
+    const { userId, reviewId } = req.params;
+
+    if (!userId || !reviewId) {
+      return res.status(400).json({
+        message: "Se requieren userId y reviewId",
+      });
+    }
+
+    const result = await deleteReviewService(
+      Number(userId),
+      Number(reviewId)
+    );
+
+    return res.status(200).json({
+      message: "Reseña eliminada correctamente",
+      result,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
