@@ -1,17 +1,8 @@
-import { Router } from "express";
-import { getReviewsByUser, deleteReview } from "../controllers/ReviewsControlles.js";
-import { authRequired } from "../middlewares/authRequired.js";
+const express = require("express");
+const router = express.Router();
+const ReviewsController = require("../Controller/ReviewsController");
 
-const router = Router();
+router.put("/reviews/:id", ReviewsController.update);
+router.delete("/reviews/:id", ReviewsController.delete);
 
-// Obtener reseñas de un usuario
-router.get("/reviews/user/:userId", authRequired, getReviewsByUser);
-
-// Eliminar reseña de un usuario
-router.delete("/reviews/user/:userId/:reviewId", authRequired, deleteReview);
-
-export default router;
-const { deleteReview } = require("../Controller/ReviewsController");
-
-// BORRAR RESEÑA
-router.delete("/reviews/user/:userId/:reviewId", deleteReview);
+module.exports = router;

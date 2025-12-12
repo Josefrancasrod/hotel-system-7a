@@ -1,64 +1,50 @@
-const { deleteReview } = require("../../Controller/ReviewsController");
-const { deleteReviewService } = require("../../Services/ReviewsServices");
+const request = require("supertest");
+const app = require("../../app");
 
-jest.mock("../../Services/ReviewsServices");
+// 🔥 Crear mock de Prisma directamente (sin importar nada)
+const prisma = {
+    reviews: {
+        delete: jest.fn(),
+        update: jest.fn(),
+    }
+};
 
-describe("Controlador: deleteReview", () => {
-  let req;
-  let res;
+// 🔥 Sobrescribir `app.set("prisma", prisma)` si lo usas — opcional
+app.set("prisma", prisma);
 
-  beforeEach(() => {
-    req = {
-      params: {
-        userId: "10",
-        reviewId: "5",
-      },
+jest.mock("@prisma/client", () => {
+    return {
+        PrismaClient: jest.fn(() => prisma)
     };
+});
 
-    res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-    };
+describe("Reviews - DELETE & UPDATE", () => {
 
-    jest.clearAllMocks();
-  });
+    // DELETE
+    test("Debe eliminar una review correctamente", async () => {
+        prisma.reviews.delete.mockResolvedValue({
+            id: 1,
+            comentario: "borrado"
+        });
 
-  test("Debe eliminar la reseña correctamente", async () => {
-    const mockResult = { id: 5, message: "Review eliminada" };
+        const res = await request(app).delete("/reviews/1");
 
-    deleteReviewService.mockResolvedValue(mockResult);
-
-    await deleteReview(req, res);
-
-    expect(deleteReviewService).toHaveBeenCalledWith(10, 5);
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({
-      message: "Reseña eliminada correctamente",
-      result: mockResult,
+        expect(res.statusCode).toBe(200);
+        expect(res.body.message).toBe("Review eliminada con éxito");
     });
-  });
 
-  test("Debe devolver error si faltan parámetros", async () => {
-    req.params = {};
+    // UPDATE
+    test("Debe actualizar una review correctamente", async () => {
+        prisma.reviews.update.mockResolvedValue({
+            id: 1,
+            comentario: "Nuevo comentario",
+        });
 
-    await deleteReview(req, res);
+        const res = await request(app)
+            .put("/reviews/1")
+            .send({ comentario: "Nuevo comentario" });
 
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      message: "Se requieren userId y reviewId",
+        expect(res.statusCode).toBe(200);
+        expect(res.body.message).toBe("Review actualizada con éxito");
     });
-  });
-
-  test("Debe manejar errores lanzados por el servicio", async () => {
-    deleteReviewService.mockRejectedValue(
-      new Error("La reseña no existe o no pertenece al usuario")
-    );
-
-    await deleteReview(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      message: "La reseña no existe o no pertenece al usuario",
-    });
-  });
 });
