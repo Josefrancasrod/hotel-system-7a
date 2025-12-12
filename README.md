@@ -47,14 +47,124 @@ cd hotel-system-7a
 npm install
 ```
 
-### 3. Configurar Variables de Entorno
+### 3. CONECTAR PRISMA A UNA BASE DE DATOS SUPABASE
 
-Crea un archivo .env en la raíz del proyecto con las siguientes variables:
+------------------------------------------------------------
+1. INSTALAR DEPENDENCIAS
+------------------------------------------------------------
 
-```bash
-PORT=3000
-DB_URI=mongodb://localhost:27017/hotel
+Ejecuta el siguiente comando en la raíz de tu proyecto:
+``` bash
+npm install prisma @prisma/client
 ```
+Luego inicializa Prisma con:
+``` bash
+npx prisma init
+```
+Esto creará:
+- una nueva carpeta: /prisma
+- un archivo: /prisma/schema.prisma
+- y un archivo .env en la raíz del proyecto (si no existe).
+
+
+------------------------------------------------------------
+2. OBTENER TU URL DE BASE DE DATOS DE SUPABASE
+------------------------------------------------------------
+
+1. Entra a tu panel de Supabase: https://app.supabase.com/
+2. Abre tu proyecto → Configuración (Settings) → Base de datos (Database) → Connection string.
+3. Copia la cadena de conexión (URI).
+
+Ejemplo de formato:
+
+``` bash
+postgresql://postgres:[TU_PASSWORD]@db.[TU_PROJECT_ID].supabase.co:5432/postgres
+```
+
+------------------------------------------------------------
+3. CONFIGURAR EL ARCHIVO .ENV
+------------------------------------------------------------
+
+En tu archivo .env, reemplaza la cadena de conexión por la de Supabase:
+``` bash
+DATABASE_URL="postgresql://postgres:[TU_PASSWORD]@db.[TU_PROJECT_ID].supabase.co:5432/postgres"
+```
+
+Importante:
+- Nunca subas el archivo .env a GitHub.
+- Asegúrate de tener .env en tu archivo .gitignore.
+
+
+------------------------------------------------------------
+4. ACTUALIZAR EL ARCHIVO schema.prisma
+------------------------------------------------------------
+
+Abre /prisma/schema.prisma y configura los bloques de datasource y generator:
+``` javascript
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+```
+
+Ahora puedes empezar a definir tus modelos dentro de este archivo.
+
+Ejemplo:
+``` javascript
+model Rooms {
+  id          BigInt  @id @default(autoincrement())
+  name        String  @db.VarChar
+  type        String? @db.VarChar
+  price       Float?
+  description String? @db.VarChar
+  id_rating   BigInt?
+}
+´´´
+Utilizando el comando, en caso de ya tener los datos creados en la base de datos.
+
+``` bash
+npx prisma db pull
+```
+
+------------------------------------------------------------
+5. ENVIAR O MIGRAR LA BASE DE DATOS
+------------------------------------------------------------
+
+Una vez definidos tus modelos, aplica los cambios en Supabase.
+``` bash
+npx prisma migrate dev --name init
+npx prisma db pull
+```
+
+
+
+------------------------------------------------------------
+6. GENERAR EL CLIENTE DE PRISMA
+------------------------------------------------------------
+
+Después de sincronizar el esquema, genera el cliente de Prisma:
+
+``` bash
+npx prisma generate
+```
+Para verificar la conexión ejecuta:
+
+npx prisma studio
+
+Esto abrirá la interfaz visual de Prisma en:
+http://localhost:5555
+
+
+------------------------------------------------------------
+9. ¡LISTO!
+------------------------------------------------------------
+
+Tu proyecto existente de Node.js ahora está conectado a tu base de datos de Supabase usando Prisma.
+
 
 ### 4. Iniciar el proyecto
 ```bash

@@ -1,37 +1,51 @@
+// Convertir BigInt a JSON
+BigInt.prototype.toJSON = function () {
+  return this.toString();
+};
+
+require("dotenv").config();
+
+const express = require("express");
+
+// Models (si los ocupas en controladores)
 const Room = require("./Model/Room");
-const catalogRoutes  = require('./Routes/CatalogRoutes');
 const Catalogo = require("./Model/Catalog");
-const express = require('express');
+
+// Rutas
+const catalogRoutes = require("./Routes/CatalogRoutes");
+const userRoutes = require("./Routes/userRoutes");
+const rolesRoutes = require("./Routes/roles.routes"); // <-- AGREGADO
+
+// Prisma
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 const app = express();
-
 app.use(express.json());
 
 const PORT = 3000;
 
-//app.use(express.json());
-app.use('/api/catalogRoutes', catalogRoutes);
+// ------------------------------
+//            RUTAS
+// ------------------------------
+app.use("/api/catalog", catalogRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/roles", rolesRoutes); // <-- AGREGADO
 
-
-app.get('/', (req, res) => {
-  var room = new Room("Deluxe", "Luxury",5000, "image_url");
-  var room2 = new Room("Deluxe1", "Luxury1",6000,"image_url");
-  var room3 = new Room("Deluxe2", "Luxury2",7000,"image_url");
-
-  var catalog = new Catalogo([room, room2, room3]);
-
-  res.json(catalog);
+// Ruta base
+app.get("/", (req, res) => {
+  res.json({ message: "Nothing here" });
 });
 
-app.post('/get', (req, res) => {
+// Ejemplo POST
+app.post("/get", (req, res) => {
   console.log(req.body);
-  res.json({"requestBody": "hello"})
+  res.json({ requestBody: "hello" });
 });
 
-app.get('/get', (req, res) => {
-  res.send('Hello!');
-});
-
+// ------------------------------
+//          SERVIDOR
+// ------------------------------
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
